@@ -1,0 +1,7 @@
+RELAYER_URL=$(gcloud run services describe beast3-gasless-relayer-bridge --region us-central1 --format 'value(status.url)')
+
+gcloud scheduler jobs create http beast3-onchain-merkle-anchor \
+  --location=us-central1 \
+  --schedule="*/30 * * * *" \
+  --uri="$RELAYER_URL/relay/anchor-roots" \
+  --http-method=POST
