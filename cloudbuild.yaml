@@ -1,0 +1,27 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/beast3-gasless-relayer-bridge:$SHORT_SHA'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/beast3-gasless-relayer-bridge:$SHORT_SHA'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'beast3-gasless-relayer-bridge'
+      - '--image=gcr.io/$PROJECT_ID/beast3-gasless-relayer-bridge:$SHORT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-secrets=BEAST_RELAYER_PRIVATE_KEY=BEAST_RELAYER_PRIVATE_KEY:latest'
+
+images:
+  - 'gcr.io/$PROJECT_ID/beast3-gasless-relayer-bridge:$SHORT_SHA'
