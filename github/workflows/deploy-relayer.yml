@@ -1,0 +1,34 @@
+name: Deploy BEAST 3.0 Gasless Relayer Bridge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Submit Cloud Build & Deploy
+        run: |
+          gcloud builds submit --config cloudbuild.yaml .
+
+      - name: Verify Relayer Health
+        run: |
+          SERVICE_URL=$(gcloud run services describe beast3-gasless-relayer-bridge --region us-central1 --format 'value(status.url)')
+          curl -f "$SERVICE_URL/health"
